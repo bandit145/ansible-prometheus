@@ -1,0 +1,23 @@
+---
+
+- name: prometheus_facts | check if prometheus is installed
+  stat:
+    path: /etc/prometheus/prometheus
+  register: prometheus_installed
+
+- name: prometheus_facts | check prometheus version
+  shell: prometheus --version 2>&1  | awk 'NR==1{print $3}'
+  register: prometheus_installed_version
+  when: prometheus_installed.exists
+
+- name: main | create prometheus dir
+  file:
+    state: directory
+    path: /etc/prometheus
+
+- name: main | install prometheus
+  unarchive:
+    src: /tmp/prometheus-{{prom_version}}.linux-amd64.tar.gz
+    dest: /etc/prometheus/
+    remote_source: true
+  when: not prometheus_installed.exists

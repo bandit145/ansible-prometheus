@@ -1,0 +1,39 @@
+---
+# tasks file for ansible-prometheus
+
+- include_tasks: prometheus_facts.yml
+- include_tasks: system_config.yml
+
+- name: main | get prometheus package
+  get_url:
+    url: https://github.com/prometheus/prometheus/releases/download/v{{prom_version}}/prometheus-{{prom_version}}.linux-amd64.tar.gz
+    dest: /tmp/
+  when: 
+    - not prometheus_installed.exists
+    - prometheus_installed_version > prom_version
+
+- name: main | create prometheus dir
+  file:
+    state: directory
+    path: /etc/prometheus
+    owner: prometheus
+    group: prometheus
+
+- name: main | install prometheus
+  unarchive:
+    src: /tmp/prometheus-{{prom_version}}.linux-amd64.tar.gz
+    dest: /etc/prometheus/
+    remote_source: true
+    owner: prometheus
+    group: prometheus
+  when: 
+    - not prometheus_installed.exists
+    - prometheus_installed_version > prom_version
+
+- name: main | symlink promtool
+  file:
+    src: /etc/prometheus/promtool
+    dest: /usr/{{item}}
+  loop:
+    - bin
+    - sbin

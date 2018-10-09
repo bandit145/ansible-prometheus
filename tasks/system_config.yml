@@ -1,0 +1,12 @@
+---
+
+- name: system_config | configure firewall
+  firewalld:
+    port: 9090
+    permanent: true
+    state: enabled
+
+- name: system_config | add prom user
+  user:
+    name: prometheus
+    system: true
